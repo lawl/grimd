@@ -20,28 +20,29 @@ var ConfigVersion = "1.0.5"
 
 // Config holds the configuration parameters
 type Config struct {
-	Version           string
-	Sources           []string
-	SourceDirs        []string
-	LogConfig         string
-	Bind              string
-	API               string
-	Nullroute         string
-	Nullroutev6       string
-	Nameservers       []string
-	Interval          int
-	Timeout           int
-	Expire            uint32
-	Maxcount          int
-	QuestionCacheCap  int
-	TTL               uint32
-	Blocklist         []string
-	Whitelist         []string
-	ToggleName        string
-	ReactivationDelay uint
-	APIDebug          bool
-	DoH               string
-	ClientForceTCP    bool
+	Version             string
+	Sources             []string
+	SourceDirs          []string
+	LogConfig           string
+	Bind                string
+	API                 string
+	Nullroute           string
+	Nullroutev6         string
+	Nameservers         []string
+	Interval            int
+	Timeout             int
+	Expire              uint32
+	Maxcount            int
+	QuestionCacheCap    int
+	TTL                 uint32
+	Blocklist           []string
+	Whitelist           []string
+	ToggleName          string
+	ReactivationDelay   uint
+	APIDebug            bool
+	DoH                 string
+	ClientForceTCP      bool
+	MaxQueriesPerMinute int32
 }
 
 var defaultConfig = `# version this config was generated from
@@ -131,6 +132,10 @@ DoH = "https://cloudflare-dns.com/dns-query"
 # WARNING: This will make DNS lookups slower since your client now needs 3 round-trips instead of one for every answer.
 # WARNING: This is a hack and not allowed by the DNS standard, may break some clients!
 clientForceTCP = false
+
+# The maximum amount of queries allowed per minute, 0 for unlimited
+# Keep in mind that if clientForceTCP is set, each client question will be asked and counted twice.
+maxQueriesPerMinute = 0
 `
 
 // WallClock is the wall clock

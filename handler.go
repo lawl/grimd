@@ -3,6 +3,7 @@ package main
 import (
 	"net"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/miekg/dns"
@@ -36,10 +37,11 @@ func (q *Question) String() string {
 
 // DNSHandler type
 type DNSHandler struct {
-	requestChannel chan DNSOperationData
-	resolver       *Resolver
-	cache          Cache
-	negCache       Cache
+	requestChannel   chan DNSOperationData
+	resolver         *Resolver
+	cache            Cache
+	negCache         Cache
+	QueryRateCounter int32
 }
 
 // DNSOperationData type
@@ -77,6 +79,11 @@ func NewHandler(config *Config, blockCache *MemoryBlockCache, questionCache *Mem
 	}
 
 	go handler.do(config, blockCache, questionCache)
+	go (func(handler *DNSHandler) {
+		for range time.Tick(time.Second * 60) {
+			atomic.StoreInt32(&handler.QueryRateCounter, 0)
+		}
+	})(handler)
 
 	return handler
 }
@@ -89,6 +96,13 @@ func (h *DNSHandler) do(config *Config, blockCache *MemoryBlockCache, questionCa
 		}
 		func(Net string, w dns.ResponseWriter, req *dns.Msg) {
 			defer w.Close()
+
+			if atomic.LoadInt32(&h.QueryRateCounter) > config.MaxQueriesPerMinute && config.MaxQueriesPerMinute > 0 {
+				logger.Warning("Exceeded rate limit of requests! Ignoring query")
+				return
+			}
+			atomic.AddInt32(&h.QueryRateCounter, 1)
+
 			q := req.Question[0]
 			Q := Question{UnFqdn(q.Name), dns.TypeToString[q.Qtype], dns.ClassToString[q.Qclass]}
 
