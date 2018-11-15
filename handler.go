@@ -99,6 +99,21 @@ func (h *DNSHandler) do(config *Config, blockCache *MemoryBlockCache, questionCa
 				remote = w.RemoteAddr().(*net.UDPAddr).IP
 			}
 
+			// Repsond with an empty message with the "truncated" bit set,
+			// essentially answering all UDP queries with "please use TCP"
+			// this means the answer is *shorter* than the question
+			// and if we were to run this as an open resolver,
+			// it could not be abused for amplification attacks.
+			// This technique is discussed here: https://labs.apnic.net/?p=382
+			if Net == "udp" && config.ClientForceTCP {
+				m := new(dns.Msg)
+				m.Id = req.Id
+				m.Response = true
+				m.Truncated = true
+				h.WriteReplyMsg(w, m)
+				return
+			}
+
 			logger.Infof("%s lookup　%s\n", remote, Q.String())
 
 			var grimdActive = grimdActivation.query()

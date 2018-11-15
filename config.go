@@ -16,7 +16,7 @@ import (
 var BuildVersion = "1.0.5"
 
 // ConfigVersion returns the version of grimd, this should be incremented every time the config changes so grimd presents a warning
-var ConfigVersion = "1.0.4"
+var ConfigVersion = "1.0.5"
 
 // Config holds the configuration parameters
 type Config struct {
@@ -40,7 +40,8 @@ type Config struct {
 	ToggleName        string
 	ReactivationDelay uint
 	APIDebug          bool
-  	DoH               string
+	DoH               string
+	ClientForceTCP    bool
 }
 
 var defaultConfig = `# version this config was generated from
@@ -123,6 +124,13 @@ reactivationdelay = 300
 
 #Dns over HTTPS provider to use.
 DoH = "https://cloudflare-dns.com/dns-query"
+
+# If this flag is set, grimd always answers queries via UDP with an empty packet with the truncate bit set,
+# telling the client the anwser is too large, please retry via TCP. This allows you to run grimd as an open resolver
+# without it being able to abused for amplification attacks.
+# WARNING: This will make DNS lookups slower since your client now needs 3 round-trips instead of one for every answer.
+# WARNING: This is a hack and not allowed by the DNS standard, may break some clients!
+clientForceTCP = false
 `
 
 // WallClock is the wall clock
