@@ -13,10 +13,11 @@ import (
 )
 
 // BuildVersion returns the build version of grimd, this should be incremented every new release
-var BuildVersion = "1.0.5"
+var BuildVersion = "1.0.7"
 
 // ConfigVersion returns the version of grimd, this should be incremented every time the config changes so grimd presents a warning
-var ConfigVersion = "1.0.5"
+
+var ConfigVersion = "1.0.7"
 
 // Config holds the configuration parameters
 type Config struct {
@@ -41,6 +42,11 @@ type Config struct {
 	ReactivationDelay   uint
 	APIDebug            bool
 	DoH                 string
+	UseDrbl             int
+	DrblPeersFilename   string
+	DrblBlockWeight     int64
+	DrblTimeout         int
+	DrblDebug           int
 	ClientForceTCP      bool
 	MaxQueriesPerMinute int32
 }
@@ -90,7 +96,7 @@ nullroute = "0.0.0.0"
 nullroutev6 = "0:0:0:0:0:0:0:0"
 
 # nameservers to forward queries to
-nameservers = ["8.8.8.8:53", "8.8.4.4:53"]
+nameservers = ["1.1.1.1:53", "1.0.0.1:53"]
 
 # concurrency interval for lookups in miliseconds
 interval = 200
@@ -109,6 +115,13 @@ questioncachecap = 5000
 
 # manual blocklist entries
 blocklist = []
+
+# Drbl related settings
+usedrbl = 0
+drblpeersfilename = "drblpeers.yaml"
+drblblockweight = 128
+drbltimeout = 30
+drbldebug = 0
 
 # manual whitelist entries
 whitelist = [
